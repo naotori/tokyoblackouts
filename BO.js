@@ -37,6 +37,24 @@ BO.App = Ext.extend(Ext.TabPanel,{
       title: '情報源',
       iconCls: 'more',
 			store: store 
+		},{
+			xtype: 'panel',
+			html: ['<div class="teamblackouts">',
+					'<ul>',
+						'<li>@bossyooann</li>',
+						'<li>@kabaken</li>',
+						'<li>@kotsutsumi</li>',
+						'<li>@naotori</li>',
+					'</ul><br>',
+					'<span>Special Thanks to:</span><br><span>さくらインターネット</span>',
+				'</div>'].join(''), 
+			iconCls: 'team',
+			dockedItems: [{
+				xtype: 'toolbar',
+				dock: 'top',
+				title: 'Team'
+			}],
+			title: 'チーム'
 		}];
 
     BO.App.superclass.initComponent.call(this);
