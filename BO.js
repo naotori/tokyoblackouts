@@ -10,14 +10,6 @@ BO.App = Ext.extend(Ext.TabPanel,{
     }
   },
 
-  details: [
-    "06:20-10:00および16:50-20:30",  
-    "09:20-13:00および18:20-22:00",  
-    "12:20-16:00",  
-    "13:50-17:30",  
-    "15:20-19:00"
-  ],
-
   initComponent: function(){
 		Ext.regModel('InfoSource',{
 			fields: [
@@ -29,9 +21,7 @@ BO.App = Ext.extend(Ext.TabPanel,{
 
 		var store = new Ext.data.ArrayStore({
 			model: 'InfoSource',
-			data: [
-				['神奈川県','http://www.pref.kanagawa.jp/uploaded/life/131781_141863_misc.xls','2011/03/14']
-			] 
+			data: BO.Data.dataSource 
 		});
 
     this.items = [{
@@ -75,7 +65,7 @@ BO.App = Ext.extend(Ext.TabPanel,{
     this.info.update({
       group: g,
       address: a,
-      detail: this.details[g-1] 
+      detail: BO.Data.getSlot(g-1)
     });
   },
 

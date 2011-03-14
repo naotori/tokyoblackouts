@@ -1,7 +1,17 @@
 Ext.ns('BO');
 
 BO.Info = Ext.extend(Ext.Panel, {
-  tpl: '<div class="boinfo"><span>住所：{address}</span><br><span>グループ：{group}</span><br><span>時間帯：</span><p>{detail}</p></div>',
+  tpl: ['<div class="boinfo">',
+					'<span>住所：{address}</span><br>',
+					'<span>グループ：{group}</span><br>',
+					'<span>時間帯：</span>',
+					'<ul>',
+					'<tpl for="detail">',
+						'<li>{day:date("m/d")}:{slot}</li>',
+					'</tpl>',
+					'</ul>',
+					'<a href="http://www.tepco.co.jp/cc/press/index11-j.html">詳細は東京電力のサイトをご確認ください</a>',	
+				'</div>'].join(''),
 
   initComponent: function(){
     this.dockedItems = [{

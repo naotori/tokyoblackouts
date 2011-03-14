@@ -5,7 +5,7 @@ BO.Map = Ext.extend(Ext.Panel,{
     this.layout = 'fit';
     this.items = [{
       xtype: 'map',
-      useCurrentLocation: true,
+//      useCurrentLocation: true,
 			mapOptions: {
 				zoom: 15,
 				mapTypeControl: false,
@@ -61,7 +61,12 @@ BO.Map = Ext.extend(Ext.Panel,{
 
   onLocationUpdate: function(g){
     this.mask.hide();
-    if(!g){ alert('現在地が取得できませんでした。再度お試しください。'); return;}
+    if(!g){ 
+			alert('現在地が取得できませんでした。手動で現在地を設定してください。'); 
+      g = new Ext.util.GeoLocation();
+      g.longitude = 139.75082825128175;
+      g.latitude = 35.68091903087664;
+		}
 
     // debug
 		/*
@@ -220,7 +225,7 @@ BO.Map = Ext.extend(Ext.Panel,{
 
           this.fireEvent('groupfound', res.group, res.address);
         }else{
-          alert("データ取得に失敗しました");
+          alert("停電の範囲外かデータが存在しません");
         }
       },
       failure: function(res){

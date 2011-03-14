@@ -1,5 +1,5 @@
 <?php
-  $data = file_get_contents("./blackoutdata.json");
+  $data = file_get_contents("./blackoutdata.all.json");
   $json = json_decode($data);
   $len = count($json);
   $group = array($len);
