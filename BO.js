@@ -19,6 +19,21 @@ BO.App = Ext.extend(Ext.TabPanel,{
   ],
 
   initComponent: function(){
+		Ext.regModel('InfoSource',{
+			fields: [
+				{name: 'pref'},
+				{name: 'url'},
+				{name: 'update', type: 'date'}
+			]
+		});
+
+		var store = new Ext.data.ArrayStore({
+			model: 'InfoSource',
+			data: [
+				['神奈川県','http://www.pref.kanagawa.jp/uploaded/life/131781_141863_misc.xls','2011/03/14']
+			] 
+		});
+
     this.items = [{
       xtype: 'bomap',
       title: '地図',
@@ -27,7 +42,12 @@ BO.App = Ext.extend(Ext.TabPanel,{
       xtype: 'boinfo',
       title: '詳細',
       iconCls: 'info'
-    }];
+    },{
+      xtype: 'bosource',
+      title: '情報源',
+      iconCls: 'more',
+			store: store 
+		}];
 
     BO.App.superclass.initComponent.call(this);
 
