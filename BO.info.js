@@ -1,7 +1,7 @@
 Ext.ns('BO');
 
 BO.Info = Ext.extend(Ext.Panel, {
-  tpl: '<div class="boinfo"><span>住所：{address}</span><br><span>グループ：{group}</span><br><span>時間帯：</span><br><p>{detail}</p></div>',
+  tpl: '<div class="boinfo"><span>住所：{address}</span><br><span>グループ：{group}</span><br><span>時間帯：</span><p>{detail}</p></div>',
 
   initComponent: function(){
     this.dockedItems = [{

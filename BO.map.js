@@ -5,7 +5,12 @@ BO.Map = Ext.extend(Ext.Panel,{
     this.layout = 'fit';
     this.items = [{
       xtype: 'map',
-      useCurrentLocation: true
+      useCurrentLocation: true,
+			mapOptions: {
+				zoom: 15,
+				mapTypeControl: false,
+				streetViewControl: false
+			}
     }];
     this.dockedItems = [{
       xtype: 'toolbar',
@@ -56,14 +61,16 @@ BO.Map = Ext.extend(Ext.Panel,{
 
   onLocationUpdate: function(g){
     this.mask.hide();
-//    if(!g){ alert('現在地が取得できませんでした。再度お試しください。'); return;}
+    if(!g){ alert('現在地が取得できませんでした。再度お試しください。'); return;}
 
     // debug
+		/*
     if(!g){
       g = new Ext.util.GeoLocation();
       g.longitude = (139.3684954494629 + 139.44411228601075) / 2;
       g.latitude = (35.384739997054474 + 35.314085591494944) / 2;
     }
+		*/
     // debug
     
     this.setLocation(g);
@@ -101,12 +108,12 @@ BO.Map = Ext.extend(Ext.Panel,{
       ggl.event.addListener(marker, 'dragstart', function(){
         me.onMarkerDragstart.call(me);
       });
-
+/*
       ggl.event.addListener(map, 'click', function(e){
         marker.setPosition(e.latLng);
         me.onMarkerDragend.call(me);
       });
-
+*/
     }else{
       marker.setPosition(loc);
     }
