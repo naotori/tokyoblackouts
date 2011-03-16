@@ -47,6 +47,7 @@ BO.App = Ext.extend(Ext.TabPanel,{
 						'<li>@naotori</li>',
 					'</ul><br>',
 					'<span>Special Thanks to:</span><br><span>さくらインターネット</span>',
+					'<p>表示データに不具合、間違いがございましたら、@naotoriまでTwitterでご連絡ください</p>',
 				'</div>'].join(''), 
 			iconCls: 'team',
 			dockedItems: [{
@@ -80,10 +81,12 @@ BO.App = Ext.extend(Ext.TabPanel,{
   },
 
   onGroupFound: function(g,a){
+		var slot = BO.Data.getSlot(g-1);
+
     this.info.update({
       group: g,
       address: a,
-      detail: BO.Data.getSlot(g-1)
+      detail: slot
     });
   },
 

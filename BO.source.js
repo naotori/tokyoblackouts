@@ -1,9 +1,11 @@
 Ext.ns('BO');
 
 BO.Source = Ext.extend(Ext.Panel, {
-  itemTpl: '<div class="bodetail"><span class="pref">{pref}</span><br><span class="url">{url}</span><br><span class="update">最終更新日：{update:date("Y/m/d")}</span></div>',
+  itemTpl: '<div class="bodetail"><span class="pref">{pref}</span><br><a href="{url}" target="_blank" class="url">{url}</a><br><span class="update">最終更新日：{update:date("Y/m/d")}</span></div>',
 
   initComponent: function(){
+		this.layout = 'fit';
+
     this.dockedItems = [{
       dock: 'top',
       xtype: 'toolbar',
@@ -19,10 +21,12 @@ BO.Source = Ext.extend(Ext.Panel, {
     BO.Source.superclass.initComponent.call(this);
 
 		this.list = this.down('list');
+	/*
 		this.list.on({
 			itemtap: this.onItemTap,
 			scope: this
 		});
+	*/
   },
 
 	onItemTap: function(t,idx,itm,e){
