@@ -207,10 +207,10 @@ BO.Map = Ext.extend(Ext.Panel,{
       success: function(res){
         this.mask.hide();
         res = Ext.decode(res.responseText);
-        if(res.group>0){
+        if(res.group && res.group.length>0){
           var el = new Ext.Element(document.createElement('div'));
           el.addCls('infowindow');
-          el.dom.innerHTML = res.address + '<br/>' + 'グループ：' + res.group;
+          el.dom.innerHTML = res.address + '<br/>' + 'グループ：' + res.group.join(',');
 
           this.mon(el,'tapstart',function(){
             el.addCls('infowindow_pressed');

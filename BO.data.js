@@ -6,16 +6,17 @@ BO.Data = {
 	zeroDay: new Date(2011,2,15),
 
 	dataSource: [
-		['時間帯情報','http://www.tepco.co.jp/cc/press/11031517-j.html','2011/03/16'],
-		['栃木県','http://www.tepco.co.jp/images/tochigi.xls','2011/03/16'],
-		['茨城県','http://www.tepco.co.jp/images/ibaraki.xls','2011/03/16'],
-		['群馬県','http://www.tepco.co.jp/images/gunma.xls','2011/03/16'],
-		['千葉県','http://www.tepco.co.jp/images/chiba.xls','2011/03/16'],
-		['神奈川県','http://www.tepco.co.jp/images/kanagawa.xls','2011/03/16'],
-		['東京都','http://www.tepco.co.jp/images/tokyo.xls','2011/03/16'],
-		['埼玉県','http://www.tepco.co.jp/images/saitama.xls','2011/03/16'],
-		['山梨県','http://www.tepco.co.jp/images/yamanashi.xls','2011/03/16'],
-		['静岡県','http://www.tepco.co.jp/images/numazu.xls','2011/03/16']
+		['他の検索サイト（ITmedia）','http://www.itmedia.co.jp/news/articles/1103/15/news066.html','2011/03/18'],
+		['計画停電情報（東京電力）','http://www.tepco.co.jp/index-j.html','2011/03/21'],
+		['栃木県（東京電力、Excel形式）','http://www.tepco.co.jp/images/tochigi.xls','2011/03/19'],
+		['茨城県（東京電力、Excel形式）','http://www.tepco.co.jp/images/ibaraki.xls','2011/03/16'],
+		['群馬県（東京電力、Excel形式）','http://www.tepco.co.jp/images/gunma.xls','2011/03/19'],
+		['千葉県（東京電力、Excel形式）','http://www.tepco.co.jp/images/chiba.xls','2011/03/20'],
+		['神奈川県（東京電力、Excel形式）','http://www.tepco.co.jp/images/kanagawa.xls','2011/03/20'],
+		['東京都（東京電力、Excel形式）','http://www.tepco.co.jp/images/tokyo.xls','2011/03/20'],
+		['埼玉県（東京電力、Excel形式）','http://www.tepco.co.jp/images/saitama.xls','2011/03/18'],
+		['山梨県（東京電力、Excel形式）','http://www.tepco.co.jp/images/yamanashi.xls','2011/03/19'],
+		['静岡県（東京電力、Excel形式）','http://www.tepco.co.jp/images/numazu.xls','2011/03/18']
 	],
 
 	slots: [
@@ -51,20 +52,26 @@ BO.Data = {
 		return this.slots2[add] || null;
 	},
 
-	getSlot: function(group){
-		var d = new Date(Math.max(new Date(), this.zeroDay)), slots = [], day, slot1, slot2;
+	getSlot: function(g){
+		var d = new Date(Math.max(new Date(), this.zeroDay)), slots = [], day, slot1, slot2, ret = [];
 
-		for(var i=0; i<this.groups; i++){
-			day = d.add(Date.DAY,i);
-			slot1 = this.getDaySlot(group,day);
-			slot2 = this.getDaySlot2(group,day);
-
-			slots.push({
-				day: day,
-				slot: slot1 + (slot2 ? ' & '+ slot2 : '')
+		for(var j=0; j<g.length; j++){
+			for(var i=0; i<this.groups; i++){
+				day = d.add(Date.DAY,i);
+				slot1 = this.getDaySlot(g[j]-1,day);
+				slot2 = this.getDaySlot2(g[j]-1,day);
+	
+				slots.push({
+					day: day,
+					slot: slot1 + (slot2 ? ' & '+ slot2 : '')
+				});
+			}
+			ret.push({
+				group: g[j],
+				slots: slots
 			});
+			slots = [];
 		}
-
-		return slots;
+		return ret;
 	}
 };
