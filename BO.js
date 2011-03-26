@@ -50,7 +50,7 @@ BO.App = Ext.extend(Ext.TabPanel,{
 					'<h1 class="h2q">注意</h1>',
 					'<p class="caution box">地域により複数のグループが存在している場合があります。</p>',
 					'<h1 class="h2q">最終更新</h1>',
-					'<p class="update box">2011/03/21 22:55</p>',
+					'<p class="update box">2011/03/26 11:55</p>',
 				'</div>'].join(''), 
 			iconCls: 'more',
 			dockedItems: [{
@@ -120,6 +120,7 @@ BO.App = Ext.extend(Ext.TabPanel,{
 			for(i=0; i<len; i++){
 				today.push({
 					group: slot[i].group,
+					subgroup: slot[i].subgroup,
 					slot: slot[i].slots[0].slot
 				});
 			}

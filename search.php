@@ -4,9 +4,11 @@
   $json = json_decode($data);
   $len = count($json);
   $group = array($len);
+  $subs = array($len);
   $address = array($len);
 
   for($i=0; $i<$len; $i++){
+    $subs[$i] = $json[$i]->subgroup;    
     $group[$i] = $json[$i]->group;    
     $address[$i] = $json[$i]->address;
   }
@@ -27,11 +29,12 @@
 				while($j > -1){
 					$tmp = $group[$j];
 					if(array_search($tmp, $g) === false){
-						array_push($g, $tmp);
+						array_push($g, array("group"=>$tmp, "subgroup"=>$subs[$j]));
 					}
 					
 					array_splice($address, $j, 1);
 					array_splice($group, $j, 1);
+					array_splice($subs, $j, 1);
 
 					$j = array_search($q, $address);
 				}

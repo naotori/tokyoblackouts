@@ -17,7 +17,7 @@ BO.Notice = Ext.extend(Ext.Panel, {
 					'<span>今日の予定：</span>',
 					'<ul>',
 					'<tpl for="group">',
-						'<li>グループ{group}：{slot}</li>',
+						'<li>グループ{group}{subgroup}：{slot}</li>',
 					'</tpl>',
 					'</ul>',
 				'</div>'].join(''),
@@ -33,6 +33,7 @@ BO.Notice = Ext.extend(Ext.Panel, {
 				xtype: 'spacer'	
 			},{
 				text: '閉じる',
+				ui: 'decline',
 				handler: this.onClose,
 				scope: this
 			}]

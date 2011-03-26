@@ -1,11 +1,12 @@
 Ext.ns('BO');
 
-BO.Map = Ext.extend(Ext.Panel,{
+BO.Map = Ext.extend(Ext.form.FormPanel,{
+	bodyPadding: 0,
+
   initComponent: function(){
     this.layout = 'fit';
     this.items = [{
       xtype: 'map',
-//      useCurrentLocation: true,
 			mapOptions: {
 				zoom: 15,
 				mapTypeControl: false,
@@ -20,6 +21,9 @@ BO.Map = Ext.extend(Ext.Panel,{
         iconMask: true
       },
       items: [{
+				xtype: 'searchfield',
+				placeHolder: '住所や駅名で検索'
+			},{
         xtype: 'spacer'  
       },{
         iconCls: 'locate',
@@ -32,6 +36,9 @@ BO.Map = Ext.extend(Ext.Panel,{
 
     this.addEvents('addressfound', 'locationfound', 'groupfound', 'infowindowtap');
     this.map = this.down('map');
+		this.search = this.getDockedItems()[0].down('searchfield');
+
+		this.search.on('action', this.onGeocode, this);
 
     this.onLocate();
   },
@@ -62,7 +69,7 @@ BO.Map = Ext.extend(Ext.Panel,{
   onLocationUpdate: function(g){
     this.mask.hide();
     if(!g){ 
-			alert('現在地が取得できませんでした。手動で現在地を設定してください。'); 
+			alert('現在地が取得できませんでした。GPSがオフになっていませんか？地図上のピンを指で現在地に動かしてください。'); 
       g = new Ext.util.GeoLocation();
       g.longitude = 139.75082825128175;
       g.latitude = 35.68091903087664;
@@ -83,8 +90,23 @@ BO.Map = Ext.extend(Ext.Panel,{
 
     this.fireEvent('locationfound', g);
 
+		g.callback = this.onAddressFound;
+
     this.findAddress(g);
   },
+
+	onGeocode: function(field){
+		var val = field.getValue();
+
+		if(val){
+			this.findLocation({ 
+				address: val,
+				findAddress: true,
+				callback: this.onAddressFound
+			});
+		}
+	},
+
 
   setLocation: function(cfg){
     var ggl = window.google.maps, loc = new ggl.LatLng(cfg.latitude,cfg.longitude), map = this.map.map;
@@ -137,7 +159,8 @@ BO.Map = Ext.extend(Ext.Panel,{
 
     this.findAddress({
       latitude: loc.lat(),
-      longitude: loc.lng()
+      longitude: loc.lng(),
+			callback: this.onAddressFound
     });
   },
 
@@ -147,9 +170,55 @@ BO.Map = Ext.extend(Ext.Panel,{
     }
   },
 
+	getGeocoder: function(){
+		var geocoder = this.geocoder;
+
+    if(!geocoder){
+      geocoder = this.geocoder = new window.google.maps.Geocoder();
+    }
+
+		return geocoder;
+	},
+
+	findLocation: function(cfg){
+    var me = this, ggl = window.google.maps, map = me.map.map, marker = me.marker, geocoder = me.getGeocoder(),
+				request;
+				
+		if(!cfg.address){ return; }
+		
+    geocoder.geocode({ address: cfg.address }, function(res){
+			var loc, request;
+
+			if(res && Ext.isArray(res) && res.length > 0){
+				res = res[0];
+			}
+
+			loc = res.geometry.location;
+			map.setCenter(loc);
+			marker.setPosition(loc);
+
+			if(cfg.findAddress === true){
+				request = {
+					latitude: loc.lat(),
+					longitude: loc.lng()
+				};
+
+				if(cfg.callback){
+					request.callback = cfg.callback;
+				}
+
+				me.findAddress(request);
+			}
+    });
+	},
+
   findAddress: function(cfg){
-    var me = this, ggl = window.google.maps, loc = new ggl.LatLng(cfg.latitude,cfg.longitude), map = me.map.map,
-        geocoder = me.geocoder;
+    var me = this, ggl = window.google.maps, map = me.map.map, geocoder = me.getGeocoder(),
+				request;
+				
+		if(!cfg.latitude || !cfg.longitude){ return; }
+
+		request = { location: new ggl.LatLng(cfg.latitude,cfg.longitude) };
 
     var mask = this.mask, msg = "詳細情報取得中";
 
@@ -161,13 +230,13 @@ BO.Map = Ext.extend(Ext.Panel,{
 
     mask.show();
 
-    if(!geocoder){
-      geocoder = me.geocoder = new ggl.Geocoder();
-    }
-
-    geocoder.geocode({ location: loc }, function(res){
+    geocoder.geocode(request, function(res){
       me.fireEvent('addressfound', res);
-      me.onAddressFound.call(me, res);
+			if(cfg.callback && Ext.isFunction(cfg.callback)){
+				cfg.callback.call(cfg.scope || me, res);
+			}else{
+				mask.hide();
+			}
     });
   },
 
@@ -208,9 +277,14 @@ BO.Map = Ext.extend(Ext.Panel,{
         this.mask.hide();
         res = Ext.decode(res.responseText);
         if(res.group && res.group.length>0){
-          var el = new Ext.Element(document.createElement('div'));
+          var el = new Ext.Element(document.createElement('div')), groups = [];
+
+					for(var i=0, len=res.group.length; i<len; i++){
+						groups.push(res.group[i].group + res.group[i].subgroup); 	
+					}
+
           el.addCls('infowindow');
-          el.dom.innerHTML = res.address + '<br/>' + 'グループ：' + res.group.join(',');
+          el.dom.innerHTML = res.address + '<br/>' + 'グループ：' + groups.join(',');
 
           this.mon(el,'tapstart',function(){
             el.addCls('infowindow_pressed');

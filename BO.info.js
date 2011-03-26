@@ -6,7 +6,7 @@ BO.Info = Ext.extend(Ext.Panel, {
 					'<span id="timezone">時間帯：</span>',
 					'<ul>',
 					'<tpl for="detail">',
-						'<li class="h2s">グループ：{group}</li>',
+						'<li class="h2s">グループ：{group}{subgroup}</li>',
 						'<ul class="rabox">',
 						'<tpl for="slots">',
 							'<li>{day:date("m/d")}:{slot}</li>',
