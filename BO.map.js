@@ -1,17 +1,17 @@
 Ext.ns('BO');
 
 BO.Map = Ext.extend(Ext.form.FormPanel,{
-	bodyPadding: 0,
+  bodyPadding: 0,
 
   initComponent: function(){
     this.layout = 'fit';
     this.items = [{
       xtype: 'map',
-			mapOptions: {
-				zoom: 15,
-				mapTypeControl: false,
-				streetViewControl: false
-			}
+      mapOptions: {
+        zoom: 15,
+        mapTypeControl: false,
+        streetViewControl: false
+      }
     }];
     this.dockedItems = [{
       xtype: 'toolbar',
@@ -21,9 +21,9 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
         iconMask: true
       },
       items: [{
-				xtype: 'searchfield',
-				placeHolder: '住所や駅名で検索'
-			},{
+        xtype: 'searchfield',
+        placeHolder: '住所や駅名で検索'
+      },{
         xtype: 'spacer'  
       },{
         iconCls: 'locate',
@@ -36,9 +36,9 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
 
     this.addEvents('addressfound', 'locationfound', 'groupfound', 'infowindowtap');
     this.map = this.down('map');
-		this.search = this.getDockedItems()[0].down('searchfield');
+    this.search = this.getDockedItems()[0].down('searchfield');
 
-		this.search.on('action', this.onGeocode, this);
+    this.search.on('action', this.onGeocode, this);
 
     this.onLocate();
   },
@@ -69,20 +69,20 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
   onLocationUpdate: function(g){
     this.mask.hide();
     if(!g){ 
-			alert('現在地が取得できませんでした。GPSがオフになっていませんか？地図上のピンを指で現在地に動かしてください。'); 
+      alert('現在地が取得できませんでした。GPSがオフになっていませんか？地図上のピンを指で現在地に動かしてください。'); 
       g = new Ext.util.GeoLocation();
       g.longitude = 139.75082825128175;
       g.latitude = 35.68091903087664;
-		}
+    }
 
     // debug
-		/*
+    /*
     if(!g){
       g = new Ext.util.GeoLocation();
       g.longitude = (139.3684954494629 + 139.44411228601075) / 2;
       g.latitude = (35.384739997054474 + 35.314085591494944) / 2;
     }
-		*/
+    */
     // debug
     
     this.setLocation(g);
@@ -90,22 +90,22 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
 
     this.fireEvent('locationfound', g);
 
-		g.callback = this.onAddressFound;
+    g.callback = this.onAddressFound;
 
     this.findAddress(g);
   },
 
-	onGeocode: function(field){
-		var val = field.getValue();
+  onGeocode: function(field){
+    var val = field.getValue();
 
-		if(val){
-			this.findLocation({ 
-				address: val,
-				findAddress: true,
-				callback: this.onAddressFound
-			});
-		}
-	},
+    if(val){
+      this.findLocation({ 
+        address: val,
+        findAddress: true,
+        callback: this.onAddressFound
+      });
+    }
+  },
 
 
   setLocation: function(cfg){
@@ -160,7 +160,7 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
     this.findAddress({
       latitude: loc.lat(),
       longitude: loc.lng(),
-			callback: this.onAddressFound
+      callback: this.onAddressFound
     });
   },
 
@@ -170,55 +170,55 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
     }
   },
 
-	getGeocoder: function(){
-		var geocoder = this.geocoder;
+  getGeocoder: function(){
+    var geocoder = this.geocoder;
 
     if(!geocoder){
       geocoder = this.geocoder = new window.google.maps.Geocoder();
     }
 
-		return geocoder;
-	},
+    return geocoder;
+  },
 
-	findLocation: function(cfg){
+  findLocation: function(cfg){
     var me = this, ggl = window.google.maps, map = me.map.map, marker = me.marker, geocoder = me.getGeocoder(),
-				request;
-				
-		if(!cfg.address){ return; }
-		
+        request;
+        
+    if(!cfg.address){ return; }
+    
     geocoder.geocode({ address: cfg.address }, function(res){
-			var loc, request;
+      var loc, request;
 
-			if(res && Ext.isArray(res) && res.length > 0){
-				res = res[0];
-			}
+      if(res && Ext.isArray(res) && res.length > 0){
+        res = res[0];
+      }
 
-			loc = res.geometry.location;
-			map.setCenter(loc);
-			marker.setPosition(loc);
+      loc = res.geometry.location;
+      map.setCenter(loc);
+      marker.setPosition(loc);
 
-			if(cfg.findAddress === true){
-				request = {
-					latitude: loc.lat(),
-					longitude: loc.lng()
-				};
+      if(cfg.findAddress === true){
+        request = {
+          latitude: loc.lat(),
+          longitude: loc.lng()
+        };
 
-				if(cfg.callback){
-					request.callback = cfg.callback;
-				}
+        if(cfg.callback){
+          request.callback = cfg.callback;
+        }
 
-				me.findAddress(request);
-			}
+        me.findAddress(request);
+      }
     });
-	},
+  },
 
   findAddress: function(cfg){
     var me = this, ggl = window.google.maps, map = me.map.map, geocoder = me.getGeocoder(),
-				request;
-				
-		if(!cfg.latitude || !cfg.longitude){ return; }
+        request;
+        
+    if(!cfg.latitude || !cfg.longitude){ return; }
 
-		request = { location: new ggl.LatLng(cfg.latitude,cfg.longitude) };
+    request = { location: new ggl.LatLng(cfg.latitude,cfg.longitude) };
 
     var mask = this.mask, msg = "詳細情報取得中";
 
@@ -232,11 +232,11 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
 
     geocoder.geocode(request, function(res){
       me.fireEvent('addressfound', res);
-			if(cfg.callback && Ext.isFunction(cfg.callback)){
-				cfg.callback.call(cfg.scope || me, res);
-			}else{
-				mask.hide();
-			}
+      if(cfg.callback && Ext.isFunction(cfg.callback)){
+        cfg.callback.call(cfg.scope || me, res);
+      }else{
+        mask.hide();
+      }
     });
   },
 
@@ -279,9 +279,9 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
         if(res.group && res.group.length>0){
           var el = new Ext.Element(document.createElement('div')), groups = [];
 
-					for(var i=0, len=res.group.length; i<len; i++){
-						groups.push(res.group[i].group + res.group[i].subgroup); 	
-					}
+          for(var i=0, len=res.group.length; i<len; i++){
+            groups.push(res.group[i].group + res.group[i].subgroup);   
+          }
 
           el.addCls('infowindow');
           el.dom.innerHTML = res.address + '<br/>' + 'グループ：' + groups.join(',');

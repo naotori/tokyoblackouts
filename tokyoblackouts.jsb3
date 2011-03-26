@@ -7,6 +7,7 @@
             "target": "pkgs/pkg.js",
             "id"    : "pkg",
             "files" : [
+                {"path": "./", "name": "BO.mylocation.js"},
                 {"path": "./", "name": "BO.data.js"},
                 {"path": "./", "name": "BO.info.js"},
                 {"path": "./", "name": "BO.source.js"},
