@@ -2,6 +2,7 @@ Ext.ns('BO');
 
 BO.Map = Ext.extend(Ext.form.FormPanel,{
   bodyPadding: 0,
+	isMapReady: false,
 
   initComponent: function(){
     this.layout = 'fit';
@@ -11,7 +12,14 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
         zoom: 15,
         mapTypeControl: false,
         streetViewControl: false
-      }
+      },
+			listeners: {
+				maprender: function(){
+					this.isMapReady = true;
+					this.fireEvent('mapready');
+				},
+				scope: this
+			}
     }];
     this.dockedItems = [{
       xtype: 'toolbar',
@@ -34,14 +42,16 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
 
     BO.Map.superclass.initComponent.call(this);
 
-    this.addEvents('addressfound', 'locationfound', 'groupfound', 'infowindowtap');
+    this.addEvents('addressfound', 'locationfound', 'groupfound', 'infowindowtap', 'mapready');
     this.map = this.down('map');
+
     this.search = this.getDockedItems()[0].down('searchfield');
-
     this.search.on('action', this.onGeocode, this);
-
-    this.onLocate();
   },
+
+	initLocation: function(){
+		this.onLocate();	
+	},
 
   onLocate: function(){
     var mask = this.mask, msg = "現在地取得中";
@@ -57,7 +67,6 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
     var geo = this.geo;
     if(!geo){
       geo = this.geo = new Ext.util.GeoLocation({
-//        allowHighAccuracy: true
         autoUpdate: false,
         timeout: 30000
       });
@@ -67,7 +76,7 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
   },
 
   onLocationUpdate: function(g){
-    this.mask.hide();
+    if(this.mask){ this.mask.hide(); }
     if(!g){ 
       alert('現在地が取得できませんでした。GPSがオフになっていませんか？地図上のピンを指で現在地に動かしてください。'); 
       g = new Ext.util.GeoLocation();
@@ -75,16 +84,6 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
       g.latitude = 35.68091903087664;
     }
 
-    // debug
-    /*
-    if(!g){
-      g = new Ext.util.GeoLocation();
-      g.longitude = (139.3684954494629 + 139.44411228601075) / 2;
-      g.latitude = (35.384739997054474 + 35.314085591494944) / 2;
-    }
-    */
-    // debug
-    
     this.setLocation(g);
     this.addMarker(g);
 
@@ -107,11 +106,25 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
     }
   },
 
-
   setLocation: function(cfg){
     var ggl = window.google.maps, loc = new ggl.LatLng(cfg.latitude,cfg.longitude), map = this.map.map;
     map.setCenter(loc);
   },
+
+	getMarkerLocation: function(){
+		var m = this.marker, loc;
+
+		if(!m){
+			return null; 
+		}else{
+			loc = m.getPosition();
+			return {
+				latitude: loc.lat(),
+				longitude: loc.lng()
+			};
+		}
+		
+	},
 
   addMarker: function(cfg){
     var me = this, ggl = window.google.maps, loc = new ggl.LatLng(cfg.latitude,cfg.longitude), map = me.map.map, marker = me.marker;
@@ -147,7 +160,7 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
   },
 
   onMarkerClick: function(){
-    var me = this, ggl = window.google.maps, map = me.map.map, marker = me.marker, loc, iw = this.iw;
+    var me = this, ggl = window.google.maps, map = me.map.map, marker = me.marker, loc, iw = this.getInfoWindow(marker);
     loc = marker.getPosition();
 
     iw.setPosition(loc);
@@ -254,56 +267,71 @@ BO.Map = Ext.extend(Ext.form.FormPanel,{
 
       this.findGroup(queries);
     }else{
-      this.mask.hide();
+			if(this.mask){ this.mask.hide(); }
       alert("住所の取得に失敗しました");
     }
   },
 
-  findGroup: function(q){
-    var ggl = window.google.maps, map = this.map.map, iw = this.iw, marker = this.marker, content;
-    
+	getInfoWindow: function(marker){
+		var iw = this.iw;
     if(!iw){
-      iw = this.iw = new ggl.InfoWindow({
+      iw = this.iw = new window.google.maps.InfoWindow({
         position: marker.getPosition()
       });
     }
+		
+		return iw;
+	},
 
+	setInfoWindowContent: function(groups, address, marker){
+		var iw = this.getInfoWindow(marker || this.marker),
+				el = new Ext.Element(document.createElement('div')), groupString = [];
+
+		if(groups===false){
+			el.dom.innerHTML = '計画停電対象外の地域です。';	
+		}else{
+	    for(var i=0, len=groups.length; i<len; i++){
+	      groupString.push(groups[i].group + groups[i].subgroup);   
+	    }
+	
+	    el.addCls('infowindow');
+	    el.dom.innerHTML = address + '<br/>' + 'グループ：' + groupString.join(',');
+	
+	    this.mon(el,'tapstart',function(){
+	      el.addCls('infowindow_pressed');
+	    });
+	    this.mon(el,'tap',function(){
+	      el.removeCls('infowindow_pressed');
+	      this.fireEvent('infowindowtap', this);
+	    }, this);
+		}
+
+    iw.setContent(el.dom);
+	},
+
+  findGroup: function(q){
+    var ggl = window.google.maps, map = this.map.map, marker = this.marker, iw = this.getInfoWindow(marker), content;
+    
     Ext.Ajax.request({
       url: 'search.php',
       params: {
         query: Ext.encode(q)
       },
       success: function(res){
-        this.mask.hide();
+				if(this.mask){ this.mask.hide(); }
         res = Ext.decode(res.responseText);
         if(res.group && res.group.length>0){
-          var el = new Ext.Element(document.createElement('div')), groups = [];
-
-          for(var i=0, len=res.group.length; i<len; i++){
-            groups.push(res.group[i].group + res.group[i].subgroup);   
-          }
-
-          el.addCls('infowindow');
-          el.dom.innerHTML = res.address + '<br/>' + 'グループ：' + groups.join(',');
-
-          this.mon(el,'tapstart',function(){
-            el.addCls('infowindow_pressed');
-          });
-          this.mon(el,'tap',function(){
-            el.removeCls('infowindow_pressed');
-            this.fireEvent('infowindowtap', this);
-          }, this);
-
-          iw.setContent(el.dom);
+					this.setInfoWindowContent(res.group, res.address);
           iw.open(map, marker);
 
           this.fireEvent('groupfound', res.group, res.address);
         }else{
+					this.setInfoWindowContent(false);
           alert("停電の範囲外かデータが存在しません");
         }
       },
       failure: function(res){
-        this.mask.hide();
+				if(this.mask){ this.mask.hide(); }
         alert("通信エラーです");
       },
       scope: this

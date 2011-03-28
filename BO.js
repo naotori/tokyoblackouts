@@ -66,6 +66,8 @@ BO.App = Ext.extend(Ext.TabPanel,{
       scroll: 'vertical',
       html: [
         '<div class="tbteam">',
+					'<h1 class="h2q">Twitter</h1>',
+          '<p class="box"><a href="http://twitter.com/teidengps" target="_blank">@teidengps</a></p>',
           '<h1 class="h2q">Team</h1>',
           '<ul class="rabox">',
             '<li>@bossyooann</li>',
@@ -106,19 +108,69 @@ BO.App = Ext.extend(Ext.TabPanel,{
         });  
       },
       save: this.onLocationSave,
+      remove: this.onLocationRemove,
       scope: this
     });
+
+		this.initLocation();
   },
 
+	initLocation: function(){
+    var store = Ext.StoreMgr.get('MyLocations'), me = this, map = me.map, count;
+		
+		store.load();
+		count = store.getCount();
+	
+		if(count > 0){
+
+			var rec = store.getAt(0), 
+					loc = { latitude: rec.get('latitude'), longitude: rec.get('longitude') },
+					address = rec.get('address');
+
+			this.info.toggleButton();
+
+			function initMap(){
+				map.setLocation(loc);
+				map.addMarker(loc);
+				map.findGroup([address]);
+			}
+
+			if(map.isMapReady){
+				initMap();
+			}else{
+				map.on('mapready',initMap, this, { single: true });	
+			}
+
+		}else{
+			map.initLocation();		
+		}
+	},
+
   onLocationSave: function(){
-    var store = Ext.StoreMgr.get('MyLocations'), me = this, map = me.map, loc, 
+    var store = Ext.StoreMgr.get('MyLocations'), me = this, map = me.map, loc = map.getMarkerLocation(), 
         groups = me.locationInfo.group, address = me.locationInfo.address;
 
+    store.proxy.clear();
     store.load();
-    store.removeAll();
 
     for(var i=0, len=groups.length; i<len; i++){
+			store.add({
+				latitude: loc.latitude,
+				longitude: loc.longitude,
+				address: address,
+				group: groups[i].group,
+				subgroup: groups[i].subgroup
+			});	
     }
+
+		store.sync();
+  },
+
+  onLocationRemove: function(){
+    var store = Ext.StoreMgr.get('MyLocations');
+    store.proxy.clear();
+    store.load();
+		store.sync();
   },
 
   onGroupFound: function(g,a){
@@ -134,13 +186,16 @@ BO.App = Ext.extend(Ext.TabPanel,{
       detail: slot
     });
 
+		this.info.resetButton();
+
     if(this.notified === false){
       
       for(i=0; i<len; i++){
         today.push({
           group: slot[i].group,
           subgroup: slot[i].subgroup,
-          slot: slot[i].slots[0].slot
+          slot: slot[i].slots[0].slot, // 今日
+          status: slot[i].slots[0].status // 今日
         });
       }
 
